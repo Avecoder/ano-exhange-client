@@ -1,44 +1,67 @@
-import {FC, useState} from "react";
+import {FC, useMemo, useState, useEffect} from "react";
 import Card from "@/components/Card";
 import Select from "@/components/Select";
 import ExchangeIcon from "@/icons/ExchangeIcon";
 import Link from "next/link";
+import {currencyCrypto, payments} from '@/utils/currency'
+import { useOptions } from "@/hooks/useExchangerOptions";
+import { useRouter } from "next/router";
 
-const data = {
-    title: 'CoinChanger',
-    reviews: {
-        positive: 175,
-        negative: 1
-    },
-    course: {
-        original: '1.976.372 ₽',
-        final: '1 ₿'
-    },
-    min: '5000 ₽',
-    reserve: '8 ₿',
-    url: 'https://coinchanger.in'
+interface Currency {
+    price: string | number
+    currency: string
 }
 
-const options = [
-    'Bitcoin (BTC)',
-    'Tether ERC20 (USDT)',
-    'Tether BEP20 (USDT)',
-    'Ethereum (ETH)',
-    'TRON (TRX)',
-    'Dogecoin (DOGE)',
-    'Toncoin (TON)',
-    'WebMoney (WBZ)',
-    'QIWI (RUB)',
-    'PayPal (USD)',
-    'Тинькофф (RUB)',
-    'Альфа-Банк (RUB)',
-    'Сбербанк (RUB)',
-    'Visa/MasterCard (RUB)'
-]
+interface Coins {
+    id: string
+    min: Currency
+    giveCurrency: Currency
+    getCurrency: Currency
+    reserve: Currency
+}
 
-const Exchangers: FC = () => {
-    const [originalValue, setOriginalValue] = useState(options[3])
-    const [finalValue, setFinalValue] = useState(options[13])
+interface Exchange {
+    _id: string
+    title: string
+    url: string
+    posReview: number
+    negReview: number
+    coins: Coins[]
+}
+
+export interface ExchangersProps {
+    exchangers: Exchange[]
+}
+
+
+
+const Exchangers: FC<ExchangersProps> = ({exchangers}) => {
+    const [getValue, setGetValue] = useState(payments[0].title)
+    const [giveValue, setGiveValue] = useState(currencyCrypto[0].title)
+
+    const router = useRouter()
+    
+    
+    const options = useOptions(giveValue, getValue)
+
+
+    useEffect(() => {
+        const allData = [...currencyCrypto, ...payments]
+
+        
+        const getData = allData.find(item => item.title === getValue)
+        const giveData = allData.find(item => item.title === giveValue)
+
+        router.push({
+            pathname: '/',
+            query: {
+                currency: `${giveData?.value}-${getData?.value}`
+            }
+        }, undefined, { scroll: false })
+
+    }, [giveValue, getValue])
+
+    
 
     return (
         <>
@@ -46,40 +69,48 @@ const Exchangers: FC = () => {
             <div className="mt-14 flex items-center justify-center gap-x-14">
                 <div>
                     <p className="text-xl font-bold mb-4">Give it away</p>
-                    <Select options={options} selectedValue={originalValue} setSelectedValue={setOriginalValue}/>
+                    <Select options={options.giveOptions} selectedValue={giveValue} setSelectedValue={setGiveValue}/>
                 </div>
                 <div>
                     <p className="text-xl font-bold mb-4">You get</p>
-                    <Select options={options} selectedValue={finalValue} setSelectedValue={setFinalValue} />
+                    <Select options={options.getOptions} selectedValue={getValue} setSelectedValue={setGetValue} />
                 </div>
             </div>
-            <div className="mt-36 grid grid-cols-3 gap-x-5 gap-y-5">
+            {   
+                exchangers.length 
+                ?
+                <div className="mt-36 grid grid-cols-3 gap-x-5 gap-y-5">
                 {
-                    [... new Array(9)].map(item =>
-                        <Link href={data.url}>
+                    exchangers.map(item =>
+                        <Link href={item.url} key={item._id}>
                             <Card>
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3>{data.title}</h3>
+                                    <h3>{item.title}</h3>
                                     <div className="text-sm flex gap-x-1.5">
-                                        <span className={data.reviews.negative > 0 ? 'text-red-300' : 'text-white'}>{data.reviews.negative}</span>
+                                        <span className={item.negReview > 0 ? 'text-red-300' : 'text-white'}>{item.negReview}</span>
                                         /
-                                        <span className={data.reviews.positive > 0 ? 'text-emerald-300' : 'text-white'}>{data.reviews.positive}</span>
+                                        <span className={item.posReview > 0 ? 'text-emerald-300' : 'text-white'}>{item.posReview}</span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-x-4 text-sm mb-2">
-                                    <p>{data.course.original}</p>
+                                <div className="flex items-center gap-x-4 text-sm mb-4">
+                                    <p>{item.coins[0].giveCurrency.price} {item.coins[0].giveCurrency.currency.split(' ')[0]}</p>
                                     <ExchangeIcon fill="white" size="12"/>
-                                    <p>{data.course.final}</p>
+                                    <p>{item.coins[0].getCurrency.price} {item.coins[0].getCurrency.currency.split(' ')[0]}</p>
                                 </div>
-                                <div className="flex items-center gap-x-5 text-sm">
-                                    <p>min: {data.min}</p>
-                                    <p>Reserve: {data.reserve}</p>
+                                <div className="flex flex-col gap-2 text-sm">
+                                    <p>min: <span className="">{`${item.coins[0].min.price}`.split('от')[1]} {item.coins[0].min.currency}</span></p>
+                                    <p>reserve: <span className="">{item.coins[0].reserve.price} {item.coins[0].getCurrency.currency.split(' ')[0]}</span></p>
                                 </div>
                             </Card>
                         </Link>
                     )
                 }
             </div>
+            : 
+            <div className="mt-36 flex justify-center">
+                <h3 className="text-2xl">Not found exchangers</h3>
+            </div>
+            }
         </>
     )
 }

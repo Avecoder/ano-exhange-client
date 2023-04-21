@@ -2,12 +2,11 @@ import {FC} from "react";
 
 
 interface InfoItemType {
-    key: string,
     title: string,
     value: string | number
 }
 
-const InfoItem: FC<InfoItemType> = ({key, title, value}) => {
+const InfoItem: FC<InfoItemType> = ({ title, value}) => {
 
 
     return (

@@ -18,7 +18,7 @@ const Input: FC<InputType> = ({placeholder}) => {
             <input
                 type="text"
                 placeholder={placeholder}
-                className="py-2.5 px-5 pl-14 text-sm border border-slate-150 rounded-md w-full"
+                className="py-2.5 px-5 pl-14 text-sm border border-slate-150  rounded-md w-full"
             />
 
             <div className="input-qr cursor-pointer">

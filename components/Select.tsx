@@ -3,7 +3,10 @@ import ArrowMiniIcon from "@/icons/ArrowMiniIcon";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SelectType {
-    options: string[];
+    options: {
+        title: string
+        value: string
+    }[];
     selectedValue: string;
     setSelectedValue: (value: string) => void;
 }
@@ -46,7 +49,9 @@ const Select: FC<SelectType> = ({options, selectedValue, setSelectedValue}) => {
                 className="block w-60 text-sm font-bold text-left bg-black text-white rounded-md px-5 py-2.5 flex items-center justify-between"
             >
                 <span>{selectedValue}</span>
-                <ArrowMiniIcon fill="white" classes={`${isOpen ? 'rotate-180' : ''} duration-100`}/>
+                <div className={`${isOpen ? 'rotate-180' : ''} duration-100`}>
+                    <ArrowMiniIcon fill="white"/>
+                </div>
             </motion.div>
             <AnimatePresence>
                 {isOpen && (
@@ -58,8 +63,8 @@ const Select: FC<SelectType> = ({options, selectedValue, setSelectedValue}) => {
                     >
                         <ul className='list-none flex flex-col text-sm overflow-y-scroll max-h-80'>
                             {options.map((option, index) => (
-                                <li key={index} className="px-5 py-3 pr-9 hover:bg-slate-100 cursor-pointer" onClick={() => handleSelect(option)}>
-                                    {option}
+                                <li key={index} className="px-5 py-3 pr-9 hover:bg-slate-100 cursor-pointer" onClick={() => handleSelect(option.title)}>
+                                    {option.title}
                                 </li>
                             ))}
                         </ul>

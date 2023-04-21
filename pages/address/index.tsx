@@ -10,57 +10,27 @@ import TransactionHistory from "@/components/address-page/TransactionHistory";
 import NFT from "@/components/address-page/NFT";
 import CustomHead from "@/components/CustomHead";
 import {motion} from "framer-motion";
+import { GetServerSideProps } from 'next'
+import axios from 'axios'
+import {FC} from 'react'
+import {getHistory, getActiveByAddress, getAddressData} from '@/controllers/etherscan'
+import {coins} from '@/utils/coins'
+import QR from '@/components/QR'
 
-const user = {
 
-    firstBalanceChange: {
-        title: 'First balance change',
-        value: 'Received 6 months ago'
-    },
-    lastBalanceChange: {
-        title: 'Last balance change',
-        value: 'Sent 6 days ago'
-    },
-    transactionCount: {
-        title: 'Transaction count',
-        value: 44
-    }
+
+
+export interface AddressPageProps {
+    data: any
 }
 
-const userAddressInf = {
-    address: {
-        title: 'Address',
-        value: '0xf9ca4ccea8732d5c803cf0ed2be102817fc9abde'
-    },
-    balance: {
-        title: 'Balance',
-        value: '0.008947123479246065 ETH - 14.94 USD'
-    },
-    totalRecieved: {
-        title: 'Total received',
-        value: '0.078698 ETH - 127.94 USD'
-    },
-    totalSpent: {
-        title: 'Total spent',
-        value: '0.0355 ETH - 55.94 USD'
-    },
-    tokenBalance: {
-        title: 'ERC-20 token balance',
-        value: '0.94 USD'
-    },
-    assetCount: {
-        title: 'Asset count',
-        value: 2
-    },
-}
-
-const AddressPage = () => {
+const AddressPage: FC<AddressPageProps> = ({data}) => {
 
 
     const buttons = [
         {
             title: 'Address info',
-            value: 'address'
+            value: 'address',
         },
         {
             title: 'ERC-20 Token balances',
@@ -69,11 +39,7 @@ const AddressPage = () => {
         {
             title: 'Transaction history',
             value: 'history',
-            Icon: ExchangeIcon
-        },
-        {
-            title: 'NFT',
-            value: 'nft'
+            Icon: ExchangeIcon,
         }
     ]
 
@@ -81,28 +47,23 @@ const AddressPage = () => {
         {
             value: 'address',
             Component: AddressInfo,
-            componentProps: userAddressInf
         },
         {
             value: 'balance',
             Component: TokenBalance,
-            componentProps: userAddressInf
         },
         {
             value: 'history',
             Component: TransactionHistory,
-            componentProps: userAddressInf
-        },
-        {
-            value: 'nft',
-            Component: NFT,
-            componentProps: userAddressInf
-        },
+        }
     ]
 
     const [buttonCurrent, setButtonCurrent] = useState(buttons[0])
 
+    const imgPath = coins.find(item => item.name === 'Etherium')?.path
 
+
+    console.log(data)
 
 
     return (
@@ -120,10 +81,10 @@ const AddressPage = () => {
                     <h2>Ethereum account</h2>
                 </div>
                 <div className="col-start-1 col-end-3">
-                    <Info data={user}/>
+                    <Info data={data.activeData.infoAddress}/>
                 </div>
                 <div className="col-start-4 col-end-12 flex flex-col gap-y-14">
-                    <div className="flex gap-x-5">
+                    <div className="flex gap-5 flex-wrap">
                         {
                             buttons.map(({value, title, Icon}, i) =>
                                 <Button
@@ -149,16 +110,45 @@ const AddressPage = () => {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5 }}
                                 >
-                                    <Component />
+                                    <Component data={data}/>
                                 </motion.div>
                             )
                         }
                     </div>
                 </div>
+
             </main>
+
+            <QR />
         </>
 
     )
+
 }
 
 export default AddressPage
+
+
+
+export const getServerSideProps: GetServerSideProps<any> = async ctx => {
+    const apiKeyEtherscan = 'A2P8KAW7BVY52TQ5Y3FCDYKMYG5GUXQBY4'
+    const apiKeyEthplorer = 'EK-vzzkC-pWsKUQS-ujUqC'
+    let address: string = '0xf9Ca4CceA8732d5C803CF0Ed2be102817FC9aBDe'
+
+    if(ctx.query.user) address = `${ctx.query.user}`
+
+    const history = await getHistory(address, apiKeyEthplorer)
+    const activeData = await getActiveByAddress(address, apiKeyEthplorer)
+
+
+    return {
+      props: {
+        data: {
+            history ,
+            address,
+            activeData,
+            addressInfo: []
+        }
+      }
+    }
+  }

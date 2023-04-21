@@ -1,7 +1,7 @@
 import {FC} from "react";
+import {AddressComponentProps} from '@/components/@type'
 
-
-const NFT: FC = () => {
+const NFT: FC<AddressComponentProps> = ({data}) => {
 
 
     return (
