@@ -12,20 +12,18 @@ import CustomHead from "@/components/CustomHead";
 import {motion} from "framer-motion";
 import { GetServerSideProps } from 'next'
 import axios from 'axios'
-import {FC} from 'react'
+import {FC, lazy, Suspense} from 'react'
 import {getHistory, getActiveByAddress, getAddressData} from '@/controllers/etherscan'
 import {coins} from '@/utils/coins'
 import QR from '@/components/QR'
-
-
-
+const EthModel = lazy(() => import('@/components/EthModel'))
 
 export interface AddressPageProps {
     data: any
 }
 
 const AddressPage: FC<AddressPageProps> = ({data}) => {
-
+    const [showQR, setShowQr] = useState(false)
 
     const buttons = [
         {
@@ -47,6 +45,7 @@ const AddressPage: FC<AddressPageProps> = ({data}) => {
         {
             value: 'address',
             Component: AddressInfo,
+            setValue: setShowQr
         },
         {
             value: 'balance',
@@ -58,28 +57,31 @@ const AddressPage: FC<AddressPageProps> = ({data}) => {
         }
     ]
 
+
+
+
     const [buttonCurrent, setButtonCurrent] = useState(buttons[0])
 
     const imgPath = coins.find(item => item.name === 'Etherium')?.path
 
 
-    console.log(data)
 
 
     return (
         <>
             <CustomHead title="Account data" description="This is account page anoExchange"/>
             <main className="flex flex-col grid grid-cols-12 gap-x-5 gap-y-14">
-                <div className="flex gap-x-5 col-start-1 col-end-13">
-                    <Image
-                        className="rounded-full"
-                        src={ethImg}
-                        alt="account type"
-                        width="50"
-                        height="50"
-                    />
-                    <h2>Ethereum account</h2>
+                <div className="flex gap-x-5 col-start-1 col-end-13 items-center">
+
+
+                    <Suspense>
+                      <div className="w-20">
+                        <EthModel rotationY={0}/>
+                      </div>
+                    </ Suspense>
+                    <h2 className="pb-6">Ethereum account</h2>
                 </div>
+
                 <div className="col-start-1 col-end-3">
                     <Info data={data.activeData.infoAddress}/>
                 </div>
@@ -103,14 +105,14 @@ const AddressPage: FC<AddressPageProps> = ({data}) => {
                     </div>
                     <div>
                         {
-                            sections.map(({value, Component}) =>
+                            sections.map(({value, Component, setValue}) =>
                                 value === buttonCurrent.value &&
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5 }}
                                 >
-                                    <Component data={data}/>
+                                    <Component data={data} setValue={setValue}/>
                                 </motion.div>
                             )
                         }
@@ -118,8 +120,9 @@ const AddressPage: FC<AddressPageProps> = ({data}) => {
                 </div>
 
             </main>
-
-            <QR />
+            {
+              showQR && <QR showQR={showQR} setShowQr={setShowQr} valueQR={data.address}/>
+            }
         </>
 
     )
@@ -131,24 +134,35 @@ export default AddressPage
 
 
 export const getServerSideProps: GetServerSideProps<any> = async ctx => {
-    const apiKeyEtherscan = 'A2P8KAW7BVY52TQ5Y3FCDYKMYG5GUXQBY4'
-    const apiKeyEthplorer = 'EK-vzzkC-pWsKUQS-ujUqC'
-    let address: string = '0xf9Ca4CceA8732d5C803CF0Ed2be102817FC9aBDe'
+  const apiKeyEtherscan = 'A2P8KAW7BVY52TQ5Y3FCDYKMYG5GUXQBY4'
+  const apiKeyEthplorer = 'EK-vzzkC-pWsKUQS-ujUqC'
+  let address: string = '0xf9Ca4CceA8732d5C803CF0Ed2be102817FC9aBDe'
 
-    if(ctx.query.user) address = `${ctx.query.user}`
+  if(ctx.query.user) address = `${ctx.query.user}`
 
-    const history = await getHistory(address, apiKeyEthplorer)
-    const activeData = await getActiveByAddress(address, apiKeyEthplorer)
+  const history = await getHistory(address, apiKeyEthplorer)
 
 
+
+  if(history?.response?.status === 406) {
     return {
-      props: {
-        data: {
-            history ,
-            address,
-            activeData,
-            addressInfo: []
-        }
+      redirect: {
+        destination: "/error",
+        permanent: false,
       }
     }
   }
+
+  const activeData = await getActiveByAddress(address, apiKeyEthplorer)
+
+  return {
+    props: {
+      data: {
+          history,
+          address,
+          activeData,
+          addressInfo: []
+      }
+    }
+  }
+}

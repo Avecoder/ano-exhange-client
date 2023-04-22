@@ -7,9 +7,13 @@ const api = axios.create({
 
 
 export const getHistory = async (address: string, apiKey: string) => {
-    const response = await api.get(`getAddressHistory/${address}?apiKey=${apiKey}&limit=100`);
+    try {
+      const response = await api.get(`getAddressHistory/${address}?apiKey=${apiKey}&limit=100`);
 
-    return response.data.operations
+      return response.data.operations
+    } catch (err) {
+      return err
+    }
 }
 
 export const getActiveByAddress = async (address: string, apiKey: string) => {

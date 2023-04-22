@@ -5,9 +5,11 @@ import {motion} from "framer-motion";
 
 interface InputType {
     placeholder: string
+    value: string
+    setValue: (arg: any) => void | any
 }
 
-const Input: FC<InputType> = ({placeholder}) => {
+const Input: FC<InputType> = ({placeholder, value, setValue}) => {
 
 
     return (
@@ -18,6 +20,8 @@ const Input: FC<InputType> = ({placeholder}) => {
             <input
                 type="text"
                 placeholder={placeholder}
+                value={value}
+                onChange={e => setValue(e.target.value)}
                 className="py-2.5 px-5 pl-14 text-sm border border-slate-150  rounded-md w-full"
             />
 

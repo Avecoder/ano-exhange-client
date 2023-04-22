@@ -6,8 +6,11 @@ import CopyIcon from "@/icons/CopyIcon";
 import {AddressComponentProps} from '@/components/@type'
 import TokenBalances from './TokenBalances'
 
-const AddressInfo: FC<AddressComponentProps> = ({data}) => {
-    console.log(data)
+interface AddressInfoProps {
+  setValue: any
+}
+
+const AddressInfo: FC<AddressComponentProps, AddressInfoProps> = ({data, setValue}) => {
 
 
 
@@ -22,7 +25,9 @@ const AddressInfo: FC<AddressComponentProps> = ({data}) => {
                             whileTap={{ scale: 0.9 }}
                             className="cursor-pointer"
                         >
-                            <QRicon fill="black"  />
+                            <div onClick={() => setValue(true)}>
+                              <QRicon fill="black"  />
+                            </div>
                         </motion.div>
 
                         <span className="text-sm">{data.address}</span>

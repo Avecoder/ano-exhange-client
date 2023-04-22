@@ -9,16 +9,18 @@ import {useState} from "react";
 import {motion} from "framer-motion";
 import axios from 'axios'
 
-
 export default function Home({exchangers}: {exchangers: any}) {
 
   const [currentMode, seCurrentMode] = useState('transaction')
+
+
 
 
   return (
     <>
 
       <CustomHead title="Home" description="This is home page anoExchange"/>
+
       <main className="flex flex-col items-center grid grid-cols-12">
           <MainSection currentMode={currentMode} setCurrentMode={seCurrentMode}/>
           {
@@ -78,4 +80,3 @@ export const getServerSideProps: GetServerSideProps<any> = async ctx => {
       },
     }
   }
-
