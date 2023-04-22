@@ -7,9 +7,10 @@ interface InputType {
     placeholder: string
     value: string
     setValue: (arg: any) => void | any
+    setShowQr: (arg: any) => void | any
 }
 
-const Input: FC<InputType> = ({placeholder, value, setValue}) => {
+const Input: FC<InputType> = ({placeholder, value, setValue, setShowQr}) => {
 
 
     return (
@@ -25,7 +26,7 @@ const Input: FC<InputType> = ({placeholder, value, setValue}) => {
                 className="py-2.5 px-5 pl-14 text-sm border border-slate-150  rounded-md w-full"
             />
 
-            <div className="input-qr cursor-pointer">
+            <div className="input-qr cursor-pointer" onClick={setShowQr}>
                 <motion.div
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}

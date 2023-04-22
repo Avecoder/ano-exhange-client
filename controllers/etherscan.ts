@@ -44,13 +44,13 @@ export const getActiveByAddress = async (address: string, apiKey: string) => {
             },
             {
                 title: 'Asset count',
-                value: actives.data.tokens.length
+                value: actives.data?.tokens ? actives.data?.tokens?.length : 0
             }
         ]
     }
 
 
-    const active = actives.data.tokens.map((item: any) => {
+    const active = actives.data?.tokens ? actives.data?.tokens?.map((item: any) => {
         return {
             contractAddress: item.tokenInfo.address,
             value: item.rawBalance,
@@ -58,24 +58,11 @@ export const getActiveByAddress = async (address: string, apiKey: string) => {
             tokenSymbol: item.tokenInfo.symbol.trim().split(' ')[0],
             decimals: item.tokenInfo.decimals
         }
-    })
+    }) : []
 
     return {
         active,
         etheriumData,
         infoAddress
-    }
-}
-
-
-export const getAddressData = async (address: string, apiKey: string) => {
-    const firstTransaction = await axios.get(`https://api.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=${apiKey}`)
-    const lastTransaction = await axios.get(`https://api.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=1&sort=desc&apikey=${apiKey}`)
-
-
-    return {
-        firstTransaction: firstTransaction.data.result[0],
-        lastTransaction: lastTransaction.data.result[0],
-        address
     }
 }

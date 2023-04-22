@@ -20,8 +20,8 @@ const ExpoleBlockchains: FC = () => {
             <h2 className="text-center">Expole Blockchains</h2>
             <div className="mt-36 grid grid-cols-3 gap-x-5 gap-y-5">
                 {
-                    [... new Array(9)].map(item =>
-                        <Card>
+                    [... new Array(9)].map((item: any, i: number) =>
+                        <Card key={i}>
                             <div className="flex gap-x-5">
                                 <Image
                                     src={data.url}
